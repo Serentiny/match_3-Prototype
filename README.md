@@ -1,5 +1,7 @@
 # match_3-Prototype
+
 Разработать прототип игры семейства match 3 (3 в ряд)
+
 Youtube video about: https://youtu.be/ZFTNghRPMeY
 
 ## Логика
