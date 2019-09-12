@@ -41,7 +41,7 @@ std::string LuaScript::move(const int& x, const int& y, const char& dir)
 	if (error)
 		return catchExceptions();
 	needToTick = lua_toboolean(L, -1);
-	lua_pop(L, 1);  /* pop returned value */
+	lua_pop(L, 1);
 	std::string result = lua_tostring(L, -1);
 	return result;
 }
@@ -63,7 +63,7 @@ std::string LuaScript::tick()
 	if (error)
 		return catchExceptions();
 	needToTick = lua_toboolean(L, -1);
-	lua_pop(L, 1);  /* pop returned value */
+	lua_pop(L, 1);
 	std::string result = lua_tostring(L, -1);
 	return result;
 }

@@ -30,7 +30,8 @@ public:
 
 		std::cout << "  Commands:" << std::endl;
 		std::cout << "m x y d - Move crystal from coord (x:y) to direction 'd'(l-left, r-right, u-up, d-down)" << std::endl;
-		std::cout << "q - Quit"    << std::endl;
+		std::cout << "mix     - Mix crystals on table" << std::endl;
+		std::cout << "q       - Quit"    << std::endl;
 		std::cout << ""            << std::endl;
 
 		std::cout << "  Input:" << std::endl;
@@ -47,13 +48,15 @@ public:
 	{
 		if (dump == "")
 			return;
-		// на вход приходит dim*dim*crystalStructSize символов, описывающих всю таблицу
+		// there are dim*dim*crystalStructSize symbols, that describe all table
 		for (int y = 0; y < dim; y++)
+		{
 			for (int x = 0; x < dim; x++)
 			{
 				auto stoneStructDump = dump.substr(crystalStructSize * (x + y * dim), crystalStructSize);
 				updateCrystal(x, y, stoneStructDump);
 			}
+		}
 		setReadyToInput();
 	};
 
@@ -78,8 +81,8 @@ private:
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	COORD coordZero      = { 0,  0};
 	COORD coordTable     = { 3,  2};
-	COORD coordInput     = { 3, 18};
-	COORD coordLastInput = { 3, 21};
+	COORD coordInput     = { 3, 19};
+	COORD coordLastInput = { 3, 22};
 
 	void clearLine(COORD pos, const size_t& emptyLineLen)
 	{
@@ -98,9 +101,9 @@ private:
 
 	char getCrystalVisChar(const std::string& dump)
 	{
-		// здесь разбирается та структура, что приходит из lua,
-		//   и для каждого кристала подбирается буквенное обозначение
-		// в данный момент никаких специальных камней нет
+		// here we got a crystal structure from lua,
+		//   and calculate a letter for each crystal
+		// now, there are no any special crystals
 		return dump[0];
 	}
 };
