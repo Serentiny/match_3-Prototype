@@ -116,9 +116,8 @@ function tick()
 				-- add random crystal to the top
 				choice = {}
 				for i = 1, table.maxn(crystalColor) do table.insert(choice, i) end
+				field[x][1] = cell:new()
 				field[x][1].color    = choice[math.random(table.maxn(choice))]
-				field[x][1].type     = 0
-				field[x][1].destroed = false
 				field[x][1].changed  = true
 
 				-- check cell again, in case of destroing previous crystal
@@ -198,10 +197,44 @@ end
 
 -- Check, how many moves are at a field
 function checkMove()
-	movesAvailable = 0
+	movesAvailable = 0	
+	for x = 1, field.dim do
+		for y = 1, field.dim do
+			if checkCellMove(x, y) then movesAvailable = movesAvailable + 1 end
+		end
+	end
+	return movesAvailable > 0	-- we can return all count of moves at a field
+end
 
+function checkCellMove(x, y)
+	color = field[x][y].color
+	result = false
+	-- check in lines
+	result = result or compareCellsColor(color, x-2, y, x-3, y)
+	result = result or compareCellsColor(color, x+2, y, x+3, y)
+	result = result or compareCellsColor(color, x, y+2, x, y+3)
+	result = result or compareCellsColor(color, x, y-2, x, y-3)
+	-- check by diag neighbours
+	result = result or compareCellsColor(color, x-1, y+1, x-1, y-1)
+	result = result or compareCellsColor(color, x+1, y+1, x+1, y-1)
+	result = result or compareCellsColor(color, x-1, y+1, x+1, y+1)
+	result = result or compareCellsColor(color, x-1, y-1, x+1, y-1)
+	-- check by diag lines
+	result = result or compareCellsColor(color, x-1, y+1, x-1, y+2)
+	result = result or compareCellsColor(color, x-1, y-1, x-1, y-2)
+	result = result or compareCellsColor(color, x+1, y+1, x+1, y+2)
+	result = result or compareCellsColor(color, x+1, y-1, x+1, y-2)
+	result = result or compareCellsColor(color, x+1, y+1, x+2, y+1)
+	result = result or compareCellsColor(color, x-1, y+1, x-2, y+1)
+	result = result or compareCellsColor(color, x+1, y-1, x+2, y-1)
+	result = result or compareCellsColor(color, x-1, y-1, x-2, y-1)
 
-	return true
+	return result
+end
+
+-- Compare some color with two crystal color
+function compareCellsColor(color, x2, y2, x3, y3)
+	return inBounds(x2, y2, x3, y3) and field[x2][y2].color == color and field[x3][y3].color == color
 end
 
 -- Shuffle all crystals at a field
