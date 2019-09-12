@@ -104,10 +104,11 @@ end
 function tick()
 	-- update crystals for destroing
 	for x = 1, field.dim do
+		deltaY = 0
 		for y = field.dim, 1, -1 do
-			if field[x][y].destroed then
+			if field[x][y+deltaY].destroed then
 				-- move dow all crystals above us
-				for iterY = y-1, 1, -1 do
+				for iterY = y+deltaY-1, 1, -1 do
 					-- move crystals to one space below
 					field[x][iterY+1] = field[x][iterY]
 					field[x][iterY+1].changed = true
@@ -121,7 +122,7 @@ function tick()
 				field[x][1].changed  = true
 
 				-- check cell again, in case of destroing previous crystal
-				y = y + 1
+				deltaY = deltaY + 1
 			end
 		end
 	end
@@ -174,7 +175,7 @@ function checkExplosion(x, y)
 		vertScore = uCount + dCount + 1
 	end
 
-	return horScore + vertScore		-- эти значения можно передавать в систему очков
+	return horScore + vertScore		-- that values can be sended to score system
 end
 
 -- Subcheck for any combinations in exact direction
