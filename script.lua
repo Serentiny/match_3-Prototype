@@ -74,10 +74,8 @@ end
 function init()
 	math.randomseed( os.time() )
 	for x = 1, field.dim do
+		if field[x] == nil then field[x] = {} end
 		for y = 1, field.dim do
-			if field[y] == nil then
-				field[y] = {}
-			end
 			field[x][y] = cell:new()
 
 			choice = {}
@@ -104,10 +102,11 @@ end
 function tick()
 	-- update crystals for destroing
 	for x = 1, field.dim do
+		-- we can not edit var in for loop, so will use deltaVar
 		deltaY = 0
 		for y = field.dim, 1, -1 do
 			if field[x][y+deltaY].destroed then
-				-- move dow all crystals above us
+				-- move down all crystals above us
 				for iterY = y+deltaY-1, 1, -1 do
 					-- move crystals to one space below
 					field[x][iterY+1] = field[x][iterY]
@@ -128,35 +127,31 @@ function tick()
 	end
 
 	-- check all touched cells to combinations again
-	needToTick = 0
+	scoreOnNextTick = 0
 	for x = 1, field.dim do
 		for y = 1, field.dim do
 			if field[x][y].changed then
-				needToTick = needToTick + checkExplosion(x, y)
+				scoreOnNextTick = scoreOnNextTick + checkCombination(x, y)
 			end
 		end
 	end
 
-	needToUpdate = needToTick > 0
-	if needToUpdate then
-		return field:dump(), needToUpdate
+	needToUpdate = scoreOnNextTick > 0
+	if not checkMove() then
+		return mix(), needToUpdate
 	else
-		if not checkMove() then
-			return mix(), needToUpdate
-		else
-			return field:dump(), needToUpdate
-		end
+		return field:dump(), needToUpdate
 	end
 end
 
 -- Check for any combinations of that cell
-function checkExplosion(x, y)
+function checkCombination(x, y)
 	color = field[x][y].color
 
 	-- horisontal check to destroing
 	horScore = 0
-	lCount = sideCheckExplosion(x, y, 'l', color)
-	rCount = sideCheckExplosion(x, y, 'r', color)
+	lCount = sideCheckCombination(x, y, 'l', color)
+	rCount = sideCheckCombination(x, y, 'r', color)
 	if lCount + rCount >= 2 then
 		sideSetRemoveFlag(x, y, 'l', color)
 		sideSetRemoveFlag(x, y, 'r', color)
@@ -166,8 +161,8 @@ function checkExplosion(x, y)
 
 	-- vertical check to destroing
 	vertScore = 0
-	uCount = sideCheckExplosion(x, y, 'u', color)
-	dCount = sideCheckExplosion(x, y, 'd', color)
+	uCount = sideCheckCombination(x, y, 'u', color)
+	dCount = sideCheckCombination(x, y, 'd', color)
 	if uCount + dCount >= 2 then
 		sideSetRemoveFlag(x, y, 'u', color)
 		sideSetRemoveFlag(x, y, 'd', color)
@@ -179,10 +174,10 @@ function checkExplosion(x, y)
 end
 
 -- Subcheck for any combinations in exact direction
-function sideCheckExplosion(x, y, dir, color)
+function sideCheckCombination(x, y, dir, color)
 	newX, newY = getCoordByDir(x, y, dir)
 	if inBounds(newX, newY) and field[newX][newY].color == color then
-		return sideCheckExplosion(newX, newY, dir, color) + 1
+		return sideCheckCombination(newX, newY, dir, color) + 1
 	end
 	return 0
 end
@@ -293,19 +288,16 @@ end
 -- Swap crystals by swipe from (x, y) to dir
 function move(x1, y1, dir)
 	needToUpdate = false
-	if dir == 'l' and x1 <= 1
-	or dir == 'r' and x1 >= field.dim
-	or dir == 'u' and y1 <= 1        
-	or dir == 'd' and y1 >= field.dim then
+	x2, y2 = getCoordByDir(x1, y1, dir)
+	if not inBounds(x2, y2) then
 		return "", needToUpdate
 	end
-	x2, y2 = getCoordByDir(x1, y1, dir)
 	-- we have checked extreme case, so now - swap them
 	field[x1][y1], field[x2][y2] = field[x2][y2], field[x1][y1]
 	field[x1][y1].changed = true
 	field[x2][y2].changed = true
 	
-	if checkExplosion(x1, y1) > 0 or checkExplosion(x2, y2) > 0 then
+	if checkCombination(x1, y1) > 0 or checkCombination(x2, y2) > 0 then
 		return tick()
 	else
 		field[x1][y1], field[x2][y2] = field[x2][y2], field[x1][y1]
